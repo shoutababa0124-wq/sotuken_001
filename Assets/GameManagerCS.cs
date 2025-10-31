@@ -19,6 +19,7 @@ public class GameManagerCS : MonoBehaviour
     {
         ObjM.submarineCS.doInit();
         ObjM.eneSubmarineCS.doInit();
+        UIM.airImageCS.doInit(UIM.airGageImage,ObjM.submarineCS.airCount);
         doOutGameDelegate = doInGame;
     }
 
@@ -27,6 +28,7 @@ public class GameManagerCS : MonoBehaviour
         ObjM.submarineCS.doInGame(ObjM.pTorpedoCS,ObjM.pHomingCS,UIM.aiming);
         ObjM.eneSubmarineCS.doInGame(ObjM.eTorpedoCS, ObjM.eHomingCS);
         UIM.homingAimCS.doLockOn(ObjM.submarineCS.doGetLockOnFlag());
+        UIM.mapIconCS.doMapping(ObjM.submarineCS);
     }
 
     // Update is called once per frame

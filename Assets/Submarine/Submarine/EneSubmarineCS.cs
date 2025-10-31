@@ -1,5 +1,7 @@
 using System.Timers;
+using Unity.Android.Gradle.Manifest;
 using Unity.Mathematics;
+using Unity.Profiling.LowLevel;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -34,6 +36,9 @@ public class EneSubmarineCS : MonoBehaviour
     float playerHP = 100;//プレイヤーのHP
 
     public PlayerInput playerInput;//敵の場合は使わない
+    public Renderer myRend;
+    public Rigidbody rb;
+
     bool onTheSeaFlag = false;//海面にいるか
     float frontBackInterval = 0.0f;//前後移動レバーの入力インターバル
     bool frontBackIntervalStart = false;//前後移動レバーの入力確認フラグ
@@ -45,11 +50,21 @@ public class EneSubmarineCS : MonoBehaviour
     float attackInterval = 0.0f;//魚雷再発射にかかるインターバル
     bool attackFlag = false;//攻撃実行確認フラグ
     float loadingTime = 0.0f;//装填時間のカウント
+    bool nAttackInstructionsFlag = false, hAttackInstructiondFlag = false;//攻撃指示
 
     bool attackRightLeft = false;//falseでleft:trueでright
     bool lockonFlag = false;//ロックオン中か
 
+    bool maskerUseFlag = false;//マスカー使用中か
+    bool maskerFlag = true;//マスカー使用可能か
+    bool maskerIntervalStart = false;//マスカーの使用インターバル開始
+    float maskerTime = 0.0f;//マスカーの経過時間
+    float maskerInterval = 0.0f;//マスカーの使用インターバル
+    Color myColor,maskerColor;//通常時、マスカー中の配色
+    bool maskerInstructionsFlag = false;//マスカーの使用指示
+
     //海面移動時の重力は-9.81、水中では0
+    Vector3 onGravity = new Vector3(0.0f, -9.81f, 0.0f), underGravity = Vector3.zero;
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
@@ -74,12 +89,28 @@ public class EneSubmarineCS : MonoBehaviour
         //潜水浮上の初期化
         divingRSpeed = 0.0f; //潜水浮上速度
         divingPSpeed = 0.0f;
+        //攻撃許可の初期化
+        attackFlag = false;
+        attackInterval = 0.0f;
+        loadingTime = 0.0f;
+        nAttackInstructionsFlag = false;
+        hAttackInstructiondFlag = false;
+        attackRightLeft = false;
+        lockonFlag = false;
+        //マスカーの初期化
+        myRend.material.color = new Color(myRend.material.color.r, myRend.material.color.g, myRend.material.color.b, 1.0f);
+        maskerFlag = true;//使用可能に
+        maskerTime = 0.0f;//効果時間のリセット
+        maskerInterval = 0.0f;//インターバルのリセット
+        maskerIntervalStart = false;//インターバルの開始前に
+        maskerUseFlag = false;//マスカーを使用していない
+        myColor = myRend.material.color;//カラーをマテリアルに合わせる
+        maskerColor = myRend.material.color - new Color(0.0f, 0.0f, 0.0f, 1.0f);
+        maskerInstructionsFlag = false;//マスカー使用の指示がない
     }
 
-    void doMoveFrontBack()
+    void doCheckDepth()
     {
-        var frontBack = playerInput.actions["Front&Back"];
-        float initFrontSpeed;
         if(transform.position.y >= 0.0f)//海面にいるか
         {
             onTheSeaFlag = true;
@@ -90,6 +121,26 @@ public class EneSubmarineCS : MonoBehaviour
             onTheSeaFlag = false;
             //Debug.Log("水中 前進" + underFrontSpeed + " : 後退" + underBackSpeed);
         }
+    }
+
+    void doSetGravity()
+    {
+        Vector3 setGravity;
+        if(onTheSeaFlag == true)
+        {
+            setGravity = onGravity;
+        }
+        else
+        {
+            setGravity = underGravity;
+        }
+        rb.AddForce(setGravity, ForceMode.Acceleration);
+    }
+
+    void doMoveFrontBack()
+    {
+        var frontBack = playerInput.actions["Front&Back"];
+        float initFrontSpeed;//前進後退に使用する変数を決める
         //適応する速度の設定
         if(onTheSeaFlag == true)//海面にいる場合
         {
@@ -282,7 +333,7 @@ public class EneSubmarineCS : MonoBehaviour
 
     void doNomalAttack(ETorpedoCS torpedoCS, EHomingCS homingCS)
     {
-        if(attackFlag == false && remainingNTorpedo > 0)
+        if(nAttackInstructionsFlag == true && attackFlag == false && remainingNTorpedo > 0)
         {
             attackFlag = true;
             remainingNTorpedo--;
@@ -296,19 +347,19 @@ public class EneSubmarineCS : MonoBehaviour
             }
             attackRightLeft = !attackRightLeft;
         }
-        //else if(playerInput.actions["HomingAttack"].WasPressedThisFrame() && remainingHTorpedo > 0)
-        //{
-        //    attackFlag = true;
-        //    if(attackRightLeft == false)
-        //    {
-        //        GameObject.Instantiate(pHomingCS, transform.position + attackLeftPos, Quaternion.Euler(transform.localEulerAngles));
-        //    }
-        //    else
-        //    {
-        //        GameObject.Instantiate(pHomingCS, transform.position + attackRightPos, Quaternion.Euler(transform.localEulerAngles));
-        //    }
-        //    attackRightLeft = !attackRightLeft;
-        //}
+        else if(hAttackInstructiondFlag == true&&attackFlag==false && remainingHTorpedo > 0)
+        {
+            attackFlag = true;
+            if(attackRightLeft == false)
+            {
+                GameObject.Instantiate(homingCS, transform.position + attackLeftPos, Quaternion.Euler(transform.localEulerAngles));
+            }
+            else
+            {
+                GameObject.Instantiate(homingCS, transform.position + attackRightPos, Quaternion.Euler(transform.localEulerAngles));
+            }
+            attackRightLeft = !attackRightLeft;
+        }
         if(attackFlag == true)
         {
             attackInterval += Time.deltaTime;
@@ -369,6 +420,53 @@ public class EneSubmarineCS : MonoBehaviour
         }
     }
 
+
+    void doMasker()
+    {
+        if(maskerInstructionsFlag == true && maskerFlag == true && onTheSeaFlag == false)//マスカーの入力+マスカー使用可能
+        {
+            airCount -= maskerCount;//エアを消費
+            maskerUseFlag = true;
+            maskerFlag = false;
+        }
+        if(maskerUseFlag == true)
+        {
+            maskerTime += Time.deltaTime;
+            if(maskerTime < 1.0f)
+            {
+                myRend.material.color = Color.Lerp(myColor, maskerColor, maskerTime);
+            }
+            else 
+            {
+                myRend.material.color = maskerColor;
+            }
+            if(maskerTime >= 10.0f || onTheSeaFlag == true || attackFlag == true)//時間経過or海面浮上or魚雷発射で解除+インターバル開始
+            {
+                maskerUseFlag = false;
+                maskerTime = 0.0f;
+                maskerIntervalStart = true;
+            }
+        }
+        if(maskerIntervalStart == true)
+        {
+            maskerInterval += Time.deltaTime;
+            if(maskerInterval < 1.0f)
+            {
+                myRend.material.color = Color.Lerp(maskerColor, myColor, maskerInterval);
+            }
+            else
+            {
+                myRend.material.color = myColor;
+            }
+            if(maskerInterval >= 4.0f)//時間経過で再使用可能
+            {
+                maskerInterval = 0.0f;
+                maskerIntervalStart = false;
+                maskerFlag = true;
+            }
+        }
+    }
+
     public bool doGetLockOnFlag()
     {
         return lockonFlag;
@@ -376,10 +474,13 @@ public class EneSubmarineCS : MonoBehaviour
 
     public void doInGame(ETorpedoCS torpedoCS, EHomingCS homingCS)
     {
+        doCheckDepth();
         //doMove();
         doNomalAttack(torpedoCS, homingCS);
         doReload();
         //doRockOn(aiming);
+        doMasker();
+        maskerInstructionsFlag = true;
     }
 
     // Update is called once per frame

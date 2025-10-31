@@ -1,5 +1,6 @@
 using System.Timers;
 using Unity.Mathematics;
+using UnityEditor;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -34,6 +35,9 @@ public class SubmarineCS : MonoBehaviour
     float playerHP = 100;//プレイヤーのHP
 
     public PlayerInput playerInput;
+    public Renderer myRend;
+    public Rigidbody rb;
+
     bool onTheSeaFlag = false;//海面にいるか
     float frontBackInterval = 0.0f;//前後移動レバーの入力インターバル
     bool frontBackIntervalStart = false;//前後移動レバーの入力確認フラグ
@@ -49,7 +53,16 @@ public class SubmarineCS : MonoBehaviour
     bool attackRightLeft = false;//falseでleft:trueでright
     bool lockonFlag = false;//ロックオン中か
 
+    bool maskerUseFlag = false;//マスカー使用中か
+    bool maskerFlag = true;//マスカー使用可能か
+    bool maskerIntervalStart = false;//マスカーの使用インターバル開始
+    float maskerTime = 0.0f;//マスカーの経過時間
+    float maskerInterval = 0.0f;//マスカーの使用インターバル
+    Color myColor, maskerColor;
+
     //海面移動時の重力は-9.81、水中では0
+    Vector3 onGravity = new Vector3(0.0f, -9.81f, 0.0f), underGravity = Vector3.zero;
+
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
@@ -69,17 +82,24 @@ public class SubmarineCS : MonoBehaviour
         frontBackInterval = 0.0f;
         frontBackIntervalStart = false;
         //旋回移動の初期化
-        turningSpeed = 0.0f; //旋回速度
+        turningSpeed = 0.0f;
         transform.rotation = Quaternion.Euler(initRotation);
         //潜水浮上の初期化
-        divingRSpeed = 0.0f; //潜水浮上速度
+        divingRSpeed = 0.0f;
         divingPSpeed = 0.0f;
+        //マスカーの初期化
+        myRend.material.color = new Color(myRend.material.color.r, myRend.material.color.g, myRend.material.color.b, 1.0f);
+        maskerFlag = true;
+        maskerTime = 0.0f;
+        maskerInterval = 0.0f;
+        maskerIntervalStart = false;
+        maskerUseFlag = false;
+        myColor = myRend.material.color;//カラーをマテリアルに合わせる
+        maskerColor = myRend.material.color - new Color(0.0f, 0.0f, 0.0f, 1.0f);
     }
 
-    void doMoveFrontBack()
+    void doCheckDepth()
     {
-        var frontBack = playerInput.actions["Front&Back"];
-        float initFrontSpeed;
         if(transform.position.y >= 0.0f)//海面にいるか
         {
             onTheSeaFlag = true;
@@ -90,6 +110,27 @@ public class SubmarineCS : MonoBehaviour
             onTheSeaFlag = false;
             //Debug.Log("水中 前進" + underFrontSpeed + " : 後退" + underBackSpeed);
         }
+    }
+
+    void doSetGravity()
+    {
+        Vector3 setGravity;
+        if(onTheSeaFlag == true)
+        {
+            setGravity = onGravity;
+        }
+        else
+        {
+            setGravity = underGravity;
+        }
+        rb.AddForce(setGravity, ForceMode.Acceleration);
+    }
+
+    //基本移動
+    void doMoveFrontBack()
+    {
+        var frontBack = playerInput.actions["Front&Back"];
+        float initFrontSpeed;
         //適応する速度の設定
         if(onTheSeaFlag == true)//海面にいる場合
         {
@@ -280,11 +321,12 @@ public class SubmarineCS : MonoBehaviour
         doMoveUpDown();
     }
 
+    //通常魚雷
     void doNomalAttack(PTorpedoCS torpedoCS, PHomingCS homingCS)
     {
-        if(attackFlag == false&&remainingNTorpedo>0)
+        if(attackFlag == false)
         {
-            if(playerInput.actions["NormalAttack"].WasPressedThisFrame())
+            if(playerInput.actions["NormalAttack"].WasReleasedThisFrame() && remainingNTorpedo > 0)
             {
                 attackFlag = true;
                 remainingNTorpedo--;
@@ -298,7 +340,7 @@ public class SubmarineCS : MonoBehaviour
                 }
                 attackRightLeft = !attackRightLeft;
             }
-            else if(playerInput.actions["HomingAttack"].WasPressedThisFrame() && remainingHTorpedo > 0)
+            else if(playerInput.actions["HomingAttack"].WasReleasedThisFrame() && remainingHTorpedo > 0)
             {
                 attackFlag = true;
                 if(attackRightLeft == false)
@@ -371,17 +413,95 @@ public class SubmarineCS : MonoBehaviour
         }
     }
 
+
+    void doMasker()
+    {
+        if(playerInput.actions["SpecialAction"].IsPressed() && playerInput.actions["Masker"].WasPressedThisFrame() && maskerFlag == true && onTheSeaFlag == false)//マスカーの入力+マスカー使用可能
+        {
+            Debug.Log("Masker");
+            airCount -= maskerCount;//エアを消費
+            maskerUseFlag = true;
+            maskerFlag = false; 
+            myColor = myRend.material.color;
+        }
+        if(maskerUseFlag == true)
+        {
+            maskerTime += Time.deltaTime;
+            if(maskerTime < 1.0f)
+            {
+                myRend.material.color = Color.Lerp(myColor, maskerColor, maskerTime);
+            }
+            else if(maskerTime == 1.0f)
+            {
+                myRend.material.color = maskerColor;
+            }
+            if(maskerTime >= 10.0f || onTheSeaFlag == true || attackFlag == true)//時間経過or海面浮上or魚雷発射で解除+インターバル開始
+            {
+                maskerUseFlag = false;
+                maskerTime = 0.0f;
+                maskerIntervalStart = true;
+                myColor = myRend.material.color;
+            }
+        }
+        if(maskerIntervalStart == true)
+        {
+            maskerInterval += Time.deltaTime;
+            if(maskerInterval < 1.0f)
+            {
+                myRend.material.color = Color.Lerp(maskerColor, myColor, maskerInterval);
+            }
+            else if(maskerInterval == 1.0f)
+            {
+                myRend.material.color = myColor;
+            }
+            if(maskerInterval >= 4.0f)//時間経過で再使用可能
+            {
+                maskerInterval = 0.0f;
+                maskerIntervalStart= false;
+                maskerFlag = true;
+            }
+        }
+    }
+    
+    //変数の取得
+    public float doGetSpeed()
+    {
+        return frontAcceleration + divingPSpeed;
+    }
+
+    public float doGetDepth()
+    {
+        return transform.position.y;
+    }
+
+    public float doGetDirection()
+    {
+        return transform.localEulerAngles.y;
+    }
     public bool doGetLockOnFlag()
     {
         return lockonFlag;
     }
 
+    public int doGetAirCount()
+    {
+        return airCount;//最大エア
+    }
+
+    public int doGetMaskerCount()
+    {
+        return maskerCount;//消費エア
+    }
+
     public void doInGame(PTorpedoCS torpedoCS, PHomingCS homingCS, GameObject aiming)
     {
+        doCheckDepth();
+        doSetGravity();
         doMove();
         doNomalAttack(torpedoCS, homingCS);
         doReload();
         doRockOn(aiming);
+        doMasker();
     }
 
     // Update is called once per frame

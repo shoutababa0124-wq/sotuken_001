@@ -5,6 +5,8 @@ TagManager:
   serializedVersion: 3
   tags:
   - Enemy
+  - ETorpedo
+  - Friendly
   layers:
   - Default
   - TransparentFX
@@ -13,11 +15,11 @@ TagManager:
   - Water
   - UI
   - PSubmarine
-  - Ptorpedo
+  - PTorpedo
   - ESubmarine
   - ETorpedo
-  - ETCollition
-  - 
+  - Map
+  - Sonar
   - 
   - 
   - 
