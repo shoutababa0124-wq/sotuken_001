@@ -479,7 +479,7 @@ public class EneSubmarineCS : MonoBehaviour
         doNomalAttack(torpedoCS, homingCS);
         doReload();
         //doRockOn(aiming);
-        doMasker();
+        //doMasker();
         maskerInstructionsFlag = true;
     }
 

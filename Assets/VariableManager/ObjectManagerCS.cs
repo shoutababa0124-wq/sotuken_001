@@ -8,4 +8,5 @@ public class ObjectManagerCS : MonoBehaviour
     public ETorpedoCS eTorpedoCS;
     public EHomingCS eHomingCS;
     public EneSubmarineCS eneSubmarineCS;
+    public EneSubmarineManagerCS eneSubmarineManagerCS;
 }

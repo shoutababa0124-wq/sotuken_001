@@ -1,5 +1,7 @@
+using System.Collections;
 using System.Timers;
 using Unity.Mathematics;
+using Unity.VisualScripting;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.InputSystem;
@@ -60,6 +62,12 @@ public class SubmarineCS : MonoBehaviour
     float maskerInterval = 0.0f;//マスカーの使用インターバル
     Color myColor, maskerColor;
 
+    float sonarInterval = 0.0f;
+    bool sonarFlag = false;
+    Vector3[] pos;//ソナー上に表示する光点の座標
+
+    int freCount, eneCount;
+
     //海面移動時の重力は-9.81、水中では0
     Vector3 onGravity = new Vector3(0.0f, -9.81f, 0.0f), underGravity = Vector3.zero;
 
@@ -67,11 +75,14 @@ public class SubmarineCS : MonoBehaviour
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
-        doInit();
+        laserLine = GetComponent<LineRenderer>();
+        fpsCamera = GetComponentInParent<Camera>();
     }
 
-    public void doInit()
+    public void doInit(int freCount, int eneCount)
     {
+        this.freCount = freCount;
+        this.eneCount = eneCount;
         playerHP = 100;//HPを最大に
         remainingNTorpedo = nTorpedoCount;//通常魚雷の装填数を最大に
         remainingHTorpedo = hTorpedoCount;//ホーミング魚雷の装填数を最大に
@@ -96,6 +107,10 @@ public class SubmarineCS : MonoBehaviour
         maskerUseFlag = false;
         myColor = myRend.material.color;//カラーをマテリアルに合わせる
         maskerColor = myRend.material.color - new Color(0.0f, 0.0f, 0.0f, 1.0f);
+        //ソナーの初期化
+        sonarFlag = false;
+        sonarInterval = 0.0f;
+        pos = new Vector3[this.freCount + this.eneCount];
     }
 
     void doCheckDepth()
@@ -377,18 +392,35 @@ public class SubmarineCS : MonoBehaviour
             }
         }
     }
+    public float fireRate = .25f;
+    public float weaponRange = 50f;
+    public float hitForce = 100f;
+    public Transform gunEnd;
 
-    void doRockOn(GameObject aiming)
+    private Camera fpsCamera;
+    private WaitForSeconds shotDuration = new WaitForSeconds(.07f);
+    private LineRenderer laserLine;
+    private float nextFire;
+
+    private IEnumerator ShotEffect()
     {
-        // マウスの左クリックを検出
+        laserLine.enabled = true;
+        yield return shotDuration;
+        laserLine.enabled = false;
+    }
+    void doRockOn(Canvas playerViewCanvas)
+    {
         if(remainingHTorpedo > 0)
         {
             // 1. カメラからRayを生成
             // Camera.mainは"MainCamera"タグのついたカメラを取得します
-            Ray ray = Camera.main.ScreenPointToRay(aiming.transform.position);
+            Ray ray = Camera.main.ScreenPointToRay(Camera.main.ViewportToWorldPoint(new Vector3(0.5f, 0.5f, 0)));
 
             // RaycastHit型の変数を宣言し、衝突した情報を受け取ります
             RaycastHit hit;
+            float distance = 100;   // 飛ばす&表示するRayの長さ
+            float duration = 3;	// 表示期間（秒）
+            Debug.DrawRay(ray.origin, ray.direction * distance, Color.red, duration, false);
 
             // 2. Rayを投射し、衝突があったか判定
             // Raycast(Ray ray, out RaycastHit hitInfo, float maxDistance = Mathf.Infinity)
@@ -401,8 +433,6 @@ public class SubmarineCS : MonoBehaviour
                 if(hitObject.tag == "Enemy")
                 {
                     Debug.Log("Lock On : " + hitObject.name);
-
-                    // ここで当たったオブジェクトに対する処理を記述
                     lockonFlag = true;
                 }
             }
@@ -411,8 +441,36 @@ public class SubmarineCS : MonoBehaviour
                 lockonFlag = false;
             }
         }
-    }
+        //if(Input.GetButtonDown("Fire1") && Time.time > nextFire)
+        //{
+        //    // 連射防止
+        //    nextFire = Time.time + fireRate;
 
+        //    StartCoroutine("ShotEffect");
+
+        //    // レイを飛ばす原点（カメラの中心）
+        //    Vector3 rayOrigin = fpsCamera.ViewportToWorldPoint(new Vector3(0.5f, 0.5f, 0));
+        //    RaycastHit hit;
+
+        //    // LineRenderer.SetPosition(index, vec3)
+        //    laserLine.SetPosition(0, gunEnd.position); // 銃口から
+        //                                               // ray origin, direction, return float, max distance
+        //    if(Physics.Raycast(rayOrigin, fpsCamera.transform.forward, out hit, weaponRange))
+        //    {
+        //        laserLine.SetPosition(1, hit.point);
+
+        //        if(hit.rigidbody != null)
+        //        {
+        //            // ヒットしたオブジェクトの背面ベクトル
+        //            hit.rigidbody.AddForce(-hit.normal * hitForce);
+        //        }
+        //    }
+        //    else
+        //    {
+        //        laserLine.SetPosition(1, rayOrigin + (fpsCamera.transform.forward * weaponRange));
+        //    }
+        //}
+    }
 
     void doMasker()
     {
@@ -462,7 +520,47 @@ public class SubmarineCS : MonoBehaviour
             }
         }
     }
-    
+
+    void doSonar(EneSubmarineManagerCS eneSubmarineManagerCS, SonarIconManagerCS sonarIconManagerCS)
+    {
+        if(playerInput.actions["Sonar"].WasPressedThisFrame() && sonarFlag == false)
+        {
+            Debug.Log("ソナー");
+            for(int i = 0; i < freCount; i++)
+            {
+
+            }
+            for(int i = freCount; i < freCount + eneCount; i++)
+            {
+                pos[i] = transform.position - eneSubmarineManagerCS.doGetEneSubmarineCS()[i].transform.position;
+            }
+            sonarFlag = true;
+        }
+        if(sonarFlag == true)
+        {
+            sonarInterval += Time.deltaTime;
+            if(sonarInterval > 4.0f)
+            {
+                sonarFlag = false;
+                sonarInterval = 0.0f;
+            }
+        }
+        for(int i = 0; i < freCount; i++)
+        {
+            //if(freSubmarineCS[i].diveSpeed != 0)//前進後退中
+            //{
+            //sonarIconManagerCS.doSonar(i, sonarFlag, eneSubmarineManagerCS);
+            //}
+        }
+        for(int i = freCount; i < freCount + eneCount; i++)
+        {
+            //if(eneSubmarineCS[i].diveSpeed != 0)//前進後退中
+            //{
+            sonarIconManagerCS.doSonar(i, sonarFlag, new Vector3(-pos[i].x, -pos[i].z, 0));
+            //}
+        }
+    }
+
     //変数の取得
     public float doGetSpeed()
     {
@@ -493,15 +591,16 @@ public class SubmarineCS : MonoBehaviour
         return maskerCount;//消費エア
     }
 
-    public void doInGame(PTorpedoCS torpedoCS, PHomingCS homingCS, GameObject aiming)
+    public void doInGame(PTorpedoCS torpedoCS, PHomingCS homingCS, Canvas playerViewCanvas,int freCount ,int eneCount,EneSubmarineManagerCS eneSubmarineManagerCS, SonarIconManagerCS sonarIconManagerCS)
     {
         doCheckDepth();
-        doSetGravity();
+        //doSetGravity();
         doMove();
         doNomalAttack(torpedoCS, homingCS);
         doReload();
-        doRockOn(aiming);
+        doRockOn(playerViewCanvas);
         doMasker();
+        doSonar(eneSubmarineManagerCS,sonarIconManagerCS);
     }
 
     // Update is called once per frame

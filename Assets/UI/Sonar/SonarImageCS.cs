@@ -8,6 +8,11 @@ public class SonarImageCS : MonoBehaviour
         
     }
 
+    public void doRotSonar(Vector3 playerRot)
+    {
+        transform.localEulerAngles = new Vector3(0, 0, playerRot.y);
+    }
+
     // Update is called once per frame
     void Update()
     {

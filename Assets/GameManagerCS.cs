@@ -12,23 +12,28 @@ public class GameManagerCS : MonoBehaviour
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
+        ObjM.eneSubmarineManagerCS = new EneSubmarineManagerCS();
+        UIM.sonarIconManagerCS = new SonarIconManagerCS(0,1,UIM.sonarIconCS,UIM.sonarCanvas);
         doOutGameDelegate = doInit;
     }
 
     void doInit()
     {
-        ObjM.submarineCS.doInit();
-        ObjM.eneSubmarineCS.doInit();
+        ObjM.submarineCS.doInit(0,1);
+        ObjM.eneSubmarineManagerCS.doCreateEneSubmarine(ObjM.eneSubmarineCS);
+        ObjM.eneSubmarineManagerCS.doInit();
         UIM.airImageCS.doInit(UIM.airGageImage,ObjM.submarineCS.airCount);
         doOutGameDelegate = doInGame;
     }
 
     void doInGame()
     {
-        ObjM.submarineCS.doInGame(ObjM.pTorpedoCS,ObjM.pHomingCS,UIM.aiming);
-        ObjM.eneSubmarineCS.doInGame(ObjM.eTorpedoCS, ObjM.eHomingCS);
+        ObjM.submarineCS.doInGame(ObjM.pTorpedoCS,ObjM.pHomingCS,UIM.playerViewCanvas,0,1,ObjM.eneSubmarineManagerCS,UIM.sonarIconManagerCS);
+        ObjM.eneSubmarineManagerCS.doInGame(ObjM.eTorpedoCS, ObjM.eHomingCS);
         UIM.homingAimCS.doLockOn(ObjM.submarineCS.doGetLockOnFlag());
         UIM.mapIconCS.doMapping(ObjM.submarineCS);
+        UIM.sonarImageCS.doRotSonar(ObjM.submarineCS.transform.localEulerAngles);
+        UIM.sonarCS.doSetPos(ObjM.submarineCS);
     }
 
     // Update is called once per frame
