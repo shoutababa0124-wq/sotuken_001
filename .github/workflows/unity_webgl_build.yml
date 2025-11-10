@@ -24,7 +24,7 @@ jobs:
         UNITY_PASSWORD: ${{ secrest.UNITYPASSWORD }}
        with:
         targetPlatform: WebGL
-        unityVersion: ${{ env/UNITY_VERSION }}
+        unityVersion: ${{ env.UNITY_VERSION }}
      - name: Upload Artifact
        uses: actions/upload-artifact@v4
        with:
