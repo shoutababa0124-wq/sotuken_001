@@ -210,6 +210,7 @@ GameObject:
   - component: {fileID: 37691185}
   - component: {fileID: 37691187}
   - component: {fileID: 37691186}
+  - component: {fileID: 37691188}
   m_Layer: 5
   m_Name: NormalTorpedoText
   m_TagString: Untagged
@@ -335,6 +336,19 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 37691184}
   m_CullTransparentMesh: 1
+--- !u!114 &37691188
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 37691184}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 506bd5bf7831fca4099bf55ed530207a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::NTorpedoTextCS
+  tmp: {fileID: 37691186}
 --- !u!1 &107499147
 GameObject:
   m_ObjectHideFlags: 0
@@ -448,6 +462,7 @@ GameObject:
   - component: {fileID: 211251452}
   - component: {fileID: 211251454}
   - component: {fileID: 211251453}
+  - component: {fileID: 211251455}
   m_Layer: 5
   m_Name: HormingTorpedoText
   m_TagString: Untagged
@@ -573,6 +588,19 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 211251451}
   m_CullTransparentMesh: 1
+--- !u!114 &211251455
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 211251451}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e4ec81d65add9614ebadbdec4812a5f0, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::HTorpedoTextCS
+  tmp: {fileID: 211251453}
 --- !u!1 &284973678
 GameObject:
   m_ObjectHideFlags: 0
@@ -781,6 +809,10 @@ MonoBehaviour:
   playerInput: {fileID: 292459409}
   myRend: {fileID: 292459415}
   rb: {fileID: 292459410}
+  fireRate: 0.25
+  weaponRange: 50
+  hitForce: 100
+  gunEnd: {fileID: 0}
 --- !u!114 &292459409
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1769,6 +1801,8 @@ MonoBehaviour:
   sonarIconCS: {fileID: 6442545190798733380, guid: b29ea941a8f33ee4ba66c9d4c3b993cb, type: 3}
   sonarCanvas: {fileID: 1046910069}
   sonarImage: {fileID: 856243383}
+  nTorpedoTextCS: {fileID: 37691188}
+  hTorpedoTextCS: {fileID: 211251455}
 --- !u!1 &820364521
 GameObject:
   m_ObjectHideFlags: 0
@@ -3113,7 +3147,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 0}
+  m_Sprite: {fileID: 21300000, guid: 82907014eb22acb40b06b6a3afc38cec, type: 3}
   m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1
@@ -3574,7 +3608,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 0}
+  m_Sprite: {fileID: 21300000, guid: eecb2ff023b42b44d92882a90e683b3d, type: 3}
   m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1

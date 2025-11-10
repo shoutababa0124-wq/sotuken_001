@@ -29,9 +29,10 @@ public class SubmarineCS : MonoBehaviour
         turningSpeed, //旋回速度
         divingRSpeed, //潜水浮上の角度速度
         divingPSpeed, //潜水浮上の移動速度
-        remainingNTorpedo, //通常魚雷残数
-        remainingHTorpedo, //ホーミング魚雷残数
         remainingAir; //エア残量
+
+    int remainingNTorpedo, //通常魚雷残数
+        remainingHTorpedo; //ホーミング魚雷残数
 
     //固定パラメータ
     float playerHP = 100;//プレイヤーのHP
@@ -48,7 +49,8 @@ public class SubmarineCS : MonoBehaviour
     float turnMax = 0.0f;//現時点の旋回速度の最大値
     float frontAcceleration = 0.0f;//前後移動の加算
 
-    float attackInterval = 0.0f;//魚雷再発射にかかるインターバル
+    float attackInterval = 0.0f;//魚雷再発射にかかるインターバルのタイマー
+    float interValTime;//インターバルにかかる時間
     bool attackFlag = false;//攻撃実行確認フラグ
     float loadingTime = 0.0f;//装填時間のカウント
 
@@ -337,14 +339,20 @@ public class SubmarineCS : MonoBehaviour
     }
 
     //通常魚雷
-    void doNomalAttack(PTorpedoCS torpedoCS, PHomingCS homingCS)
+    void doAttack(ObjectManagerCS objM, UIManagerCS uIM)
     {
+        var torpedoCS = objM.pTorpedoCS;
+        var homingCS = objM.pHomingCS;
+        var nTorpedoTextCS = uIM.nTorpedoTextCS;
+        var hTorpedoTextCS = uIM.hTorpedoTextCS;
         if(attackFlag == false)
         {
             if(playerInput.actions["NormalAttack"].WasReleasedThisFrame() && remainingNTorpedo > 0)
             {
                 attackFlag = true;
                 remainingNTorpedo--;
+                nTorpedoTextCS.doText(remainingNTorpedo);
+                interValTime = 3.0f;
                 if(attackRightLeft == false)
                 {
                     GameObject.Instantiate(torpedoCS, transform.position + attackLeftPos, Quaternion.Euler(transform.localEulerAngles));
@@ -358,6 +366,9 @@ public class SubmarineCS : MonoBehaviour
             else if(playerInput.actions["HomingAttack"].WasReleasedThisFrame() && remainingHTorpedo > 0)
             {
                 attackFlag = true;
+                remainingHTorpedo--;
+                hTorpedoTextCS.doText(remainingHTorpedo);
+                interValTime = 4.0f;
                 if(attackRightLeft == false)
                 {
                     GameObject.Instantiate(homingCS, transform.position + attackLeftPos, Quaternion.Euler(transform.localEulerAngles));
@@ -372,7 +383,7 @@ public class SubmarineCS : MonoBehaviour
         if(attackFlag == true)
         {
             attackInterval += Time.deltaTime;
-            if(attackInterval > 3.0f)
+            if(attackInterval > interValTime)
             {
                 attackInterval = 0.0f;
                 attackFlag = false;
@@ -414,7 +425,8 @@ public class SubmarineCS : MonoBehaviour
         {
             // 1. カメラからRayを生成
             // Camera.mainは"MainCamera"タグのついたカメラを取得します
-            Ray ray = Camera.main.ScreenPointToRay(Camera.main.ViewportToWorldPoint(new Vector3(0.5f, 0.5f, 0)));
+            Ray ray = Camera.main.ScreenPointToRay(new Vector3(Camera.main.pixelWidth/2,Camera.main.pixelHeight/2,0));
+            Debug.Log(new Vector3(Camera.main.pixelWidth / 2, Camera.main.pixelHeight / 2, 0));
 
             // RaycastHit型の変数を宣言し、衝突した情報を受け取ります
             RaycastHit hit;
@@ -591,16 +603,24 @@ public class SubmarineCS : MonoBehaviour
         return maskerCount;//消費エア
     }
 
-    public void doInGame(PTorpedoCS torpedoCS, PHomingCS homingCS, Canvas playerViewCanvas,int freCount ,int eneCount,EneSubmarineManagerCS eneSubmarineManagerCS, SonarIconManagerCS sonarIconManagerCS)
+    public int doGetNTorpedoCount()
     {
+        return remainingNTorpedo;
+    }
+
+    public int doGetHTorpedoCount()
+    {
+        return remainingHTorpedo;
+    }
+    public void doInGame(ObjectManagerCS objM,UIManagerCS uIM) {
         doCheckDepth();
         //doSetGravity();
         doMove();
-        doNomalAttack(torpedoCS, homingCS);
+        doAttack(objM, uIM);
         doReload();
-        doRockOn(playerViewCanvas);
+        doRockOn(uIM.playerViewCanvas);
         doMasker();
-        doSonar(eneSubmarineManagerCS,sonarIconManagerCS);
+        doSonar(objM.eneSubmarineManagerCS,uIM.sonarIconManagerCS);
     }
 
     // Update is called once per frame

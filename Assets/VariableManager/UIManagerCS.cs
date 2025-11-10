@@ -14,4 +14,6 @@ public class UIManagerCS : MonoBehaviour
     public Canvas sonarCanvas;
     public SonarIconManagerCS sonarIconManagerCS;
     public GameObject sonarImage;
+    public NTorpedoTextCS nTorpedoTextCS;
+    public HTorpedoTextCS hTorpedoTextCS;
 }

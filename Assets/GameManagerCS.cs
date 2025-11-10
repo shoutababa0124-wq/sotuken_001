@@ -23,12 +23,14 @@ public class GameManagerCS : MonoBehaviour
         ObjM.eneSubmarineManagerCS.doCreateEneSubmarine(ObjM.eneSubmarineCS);
         ObjM.eneSubmarineManagerCS.doInit();
         UIM.airImageCS.doInit(UIM.airGageImage,ObjM.submarineCS.airCount);
+        UIM.nTorpedoTextCS.doText(ObjM.submarineCS.doGetNTorpedoCount());
+        UIM.hTorpedoTextCS.doText(ObjM.submarineCS.doGetHTorpedoCount());
         doOutGameDelegate = doInGame;
     }
 
     void doInGame()
     {
-        ObjM.submarineCS.doInGame(ObjM.pTorpedoCS,ObjM.pHomingCS,UIM.playerViewCanvas,0,1,ObjM.eneSubmarineManagerCS,UIM.sonarIconManagerCS);
+        ObjM.submarineCS.doInGame(ObjM,UIM);
         ObjM.eneSubmarineManagerCS.doInGame(ObjM.eTorpedoCS, ObjM.eHomingCS);
         UIM.homingAimCS.doLockOn(ObjM.submarineCS.doGetLockOnFlag());
         UIM.mapIconCS.doMapping(ObjM.submarineCS);
