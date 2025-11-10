@@ -1,0 +1,32 @@
+name: Unity WebGL Build and Deploy
+
+on:
+  workflow_dispatch:
+  schedule:
+   - cron: "0 3 * * 1"
+
+env:
+  UNITY_VERSION: 6000.2.7f2
+
+jobs:
+  build_webgl:
+    runs-on: ubuntu-latest
+    steps:
+     - name: Checkout repositoly
+       uses: actions/checkout@v4
+       with:
+        lfs: false
+     - name: Build project (WebGL)
+       uses: game-ci/unity-builder@v4
+       env:
+        UNITY_LICENCE: ${{ secrets/UNITY_LICENCE }}
+        UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
+        UNITY_PASSWORD: ${{ secrest.UNITYPASSWORD }}
+       with:
+        targetPlatform: WebGL
+        unityVersion: ${{ env/UNITY_VERSION }}
+     - name: Upload Artifact
+       uses: actions/upload-artifact@v4
+       with:
+        name: WebGL-Build
+        path: build/WebGL
