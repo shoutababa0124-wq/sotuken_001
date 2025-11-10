@@ -34,7 +34,7 @@ jobs:
     needs: build_webgl
     runs-on: ubuntu-latest
   steps:
-  - name: Dornload Artifact
+  - name: Download Artifact
     uses: actions/download-artifact@v4
     with:
       name: WebGL-Build
