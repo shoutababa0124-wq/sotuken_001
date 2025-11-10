@@ -33,15 +33,15 @@ jobs:
   deploy:
     needs: build_webgl
     runs-on: ubuntu-latest
-  steps:
-  - name: Download Artifact
-    uses: actions/download-artifact@v4
-    with:
-      name: WebGL-Build
-      path: build_output
-  - name: Deploy to GuitHub Pages
-    uses: perceiris/actions-gh-pages@v3
-    with:
-      github_token: ${{ secrets.GITHUB_TOKEN }}
-      publish_dir: build_output
-      publish_branch: gh-pages
+    steps:
+    - name: Download Artifact
+      uses: actions/download-artifact@v4
+      with:
+        name: WebGL-Build
+        path: build_output
+    - name: Deploy to GuitHub Pages
+      uses: perceiris/actions-gh-pages@v3
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        publish_dir: build_output
+        publish_branch: gh-pages
