@@ -1,7 +1,3 @@
-using System.Timers;
-using Unity.Android.Gradle.Manifest;
-using Unity.Mathematics;
-using Unity.Profiling.LowLevel;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -141,7 +137,7 @@ public class EneSubmarineCS : MonoBehaviour
     void doMoveFrontBack()
     {
         //var frontBack = playerInput.actions["Front&Back"];
-        float frontBack = 0.01f;
+        float frontBack = 0.00f;
         float initFrontSpeed;//前進後退に使用する変数を決める
         //適応する速度の設定
         if(onTheSeaFlag == true)//海面にいる場合

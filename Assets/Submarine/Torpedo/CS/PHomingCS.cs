@@ -25,6 +25,7 @@ public class PHomingCS : MonoBehaviour
     public void doSetTarget(GameObject setTarget)
     {
         target = setTarget;
+        Debug.Log("ターゲット設定");
     }
 
     void Update()
@@ -42,9 +43,11 @@ public class PHomingCS : MonoBehaviour
         if(target == null)
         {
             transform.Translate(Vector3.forward * speed);
+            Debug.Log("ロックオン対象なし");
         }
         else
         {
+            Debug.Log("ロックオン対象 : " + target.gameObject.name);
             if(starttime > 0) { starttime -= Time.deltaTime; }
             else
             {
