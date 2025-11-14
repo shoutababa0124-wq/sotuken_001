@@ -24,11 +24,11 @@ public class EneSubmarineManagerCS
         }
     }
 
-    public void doInGame(ETorpedoCS eTorpedoCS,EHomingCS eHomingCS)
+    public void doInGame(ObjectManagerCS objM)
     {
         for (int i = 0;i < enemyCount; i++)
         {
-            eneSubmarineCS[i].doInGame(eTorpedoCS, eHomingCS);
+            eneSubmarineCS[i].doInGame(objM);
         }
     }
 

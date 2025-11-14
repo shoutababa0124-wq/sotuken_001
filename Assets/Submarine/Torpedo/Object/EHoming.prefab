@@ -122,6 +122,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 22755b383e8e2ad478bcfc74b66581c3, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::EHomingCS
+  speed: 0
+  damage: 0
+  torpedoBom: {fileID: 3425109471514100145, guid: 2a0cbe91d73a9b74ab098dc1f6f13cb5, type: 3}
 --- !u!136 &-2669790563677481805
 CapsuleCollider:
   m_ObjectHideFlags: 0

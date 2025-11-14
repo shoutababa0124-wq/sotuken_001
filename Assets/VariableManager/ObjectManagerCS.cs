@@ -9,4 +9,8 @@ public class ObjectManagerCS : MonoBehaviour
     public EHomingCS eHomingCS;
     public EneSubmarineCS eneSubmarineCS;
     public EneSubmarineManagerCS eneSubmarineManagerCS;
+    public ParticleSystem maskerParticle;
+    public ParticleSystem submarineBomParticle;
+    public ParticleSystem torpedoBomParticle;
+    public TorpedoBomCS torpedoBomCS;
 }

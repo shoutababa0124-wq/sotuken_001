@@ -2,15 +2,38 @@ using UnityEngine;
 
 public class EHomingCS : MonoBehaviour
 {
+    public float speed;
+    float speedTime = 0.0f;
+    public int damage;
+    float destroyTime = 0.0f;
+    public TorpedoBomCS torpedoBom;
+
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
-        
+        destroyTime = 0.0f;
+        speedTime = 0.0f;
+    }
+
+    private void OnTriggerEnter(Collider other)
+    {
+        GameObject.Instantiate(torpedoBom, transform.position, transform.rotation);
+        Destroy(this.gameObject);
     }
 
     // Update is called once per frame
     void Update()
     {
-        
+        if(speedTime < 1.0f)
+        {
+            speedTime += Time.deltaTime * 0.5f;
+        }
+        transform.Translate(Vector3.forward * speed * speedTime);
+        destroyTime += Time.deltaTime;
+        if(destroyTime > 5.0f)
+        {
+            GameObject.Instantiate(torpedoBom, transform.position, transform.rotation);
+            Destroy(this.gameObject);
+        }
     }
 }

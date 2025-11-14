@@ -6,6 +6,7 @@ public class PTorpedoCS : MonoBehaviour
     float speedTime = 0.0f;
     public int damage;
     float destroyTime = 0.0f;
+    public TorpedoBomCS torpedoBom;
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
@@ -28,7 +29,9 @@ public class PTorpedoCS : MonoBehaviour
                 Debug.Log("–¡•û‚Ì‹›—‹‚É–½’†I");
                 break;
         }
+        GameObject.Instantiate(torpedoBom, transform.position, transform.rotation);
         Destroy(this.gameObject);
+
     }
 
     // Update is called once per frame
@@ -42,6 +45,7 @@ public class PTorpedoCS : MonoBehaviour
         destroyTime += Time.deltaTime;
         if(destroyTime > 5.0f)
         {
+            GameObject.Instantiate(torpedoBom, transform.position, transform.rotation);
             Destroy(this.gameObject);
         }
     }

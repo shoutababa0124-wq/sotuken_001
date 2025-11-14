@@ -4,7 +4,6 @@ using UnityEngine;
 public class AirImageCS : MonoBehaviour
 {
     List<GameObject> airList;
-    float healTime = 0.0f;
 
     void Start()
     {
@@ -25,22 +24,23 @@ public class AirImageCS : MonoBehaviour
 
     public void doUseMasker(int maskerCount)//指定された値分エアを消費
     {
+        int count = 0;
+        for(int i=0; i < airList.Count; i++)
+        {
+            if(airList[i].activeSelf == true)
+            {
+                count++;
+            }
+        }
         for(int i = 0; i < maskerCount; i++)
         {
-            airList[airList.Count - (1 - i)].SetActive(false);
+            airList[count - 1 - i].SetActive(false);
         }
     }
 
-    public void doHealAir(int airCount)//エアの補充
+    public void doHealAir(int i)//エアの補充
     {
-        if(airList.Count < airCount)
-        {
-            healTime += Time.deltaTime;
-            if(healTime >= 1.0f)
-            {
-                airList[airList.Count].SetActive(true);
-            }
-        }
+        airList[i - 1].SetActive(true);
     }
 
     // Update is called once per frame

@@ -331,8 +331,10 @@ public class EneSubmarineCS : MonoBehaviour
         doMoveUpDown();
     }
 
-    void doNomalAttack(ETorpedoCS torpedoCS, EHomingCS homingCS)
+    void doNomalAttack(ObjectManagerCS objM)
     {
+        var torpedoCS = objM.eTorpedoCS;
+        var homingCS = objM.eHomingCS;
         if(nAttackInstructionsFlag == true && attackFlag == false && remainingNTorpedo > 0)
         {
             attackFlag = true;
@@ -385,40 +387,10 @@ public class EneSubmarineCS : MonoBehaviour
     }
 
 
-    void doRockOn(GameObject aiming)
-    {
-        // マウスの左クリックを検出
-        if(remainingHTorpedo > 0)
-        {
-            // 1. カメラからRayを生成
-            // Camera.mainは"MainCamera"タグのついたカメラを取得します
-            Ray ray = Camera.main.ScreenPointToRay(aiming.transform.position);
-
-            // RaycastHit型の変数を宣言し、衝突した情報を受け取ります
-            RaycastHit hit;
-
-            // 2. Rayを投射し、衝突があったか判定
-            // Raycast(Ray ray, out RaycastHit hitInfo, float maxDistance = Mathf.Infinity)
-            if(Physics.Raycast(ray, out hit))
-            {
-                // 3. 衝突したオブジェクトの情報を取得
-                // hit.collider.gameObject で衝突したゲームオブジェクトを取得
-                GameObject hitObject = hit.collider.gameObject;
-
-                if(hitObject.tag == "Enemy")
-                {
-                    Debug.Log("Lock On : " + hitObject.name);
-
-                    // ここで当たったオブジェクトに対する処理を記述
-                    lockonFlag = true;
-                }
-            }
-            else
-            {
-                lockonFlag = false;
-            }
-        }
-    }
+    //bool doGetRockOnFlag()//ロックオンの確認(ホーミングをロックオンするか)
+    //{
+    //    return rockOnFlag();
+    //}
 
 
     void doMasker()
@@ -472,15 +444,16 @@ public class EneSubmarineCS : MonoBehaviour
         return lockonFlag;
     }
 
-    public void doInGame(ETorpedoCS torpedoCS, EHomingCS homingCS)
+    public void doInGame(ObjectManagerCS objM)
     {
         doCheckDepth();
         //doMove();
-        doNomalAttack(torpedoCS, homingCS);
+        doNomalAttack(objM);
         doReload();
         //doRockOn(aiming);
-        //doMasker();
-        maskerInstructionsFlag = true;
+        doMasker();
+        //maskerInstructionsFlag = true;
+        nAttackInstructionsFlag = true;
     }
 
     // Update is called once per frame

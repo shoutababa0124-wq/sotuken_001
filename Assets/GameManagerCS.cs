@@ -25,17 +25,19 @@ public class GameManagerCS : MonoBehaviour
         UIM.airImageCS.doInit(UIM.airGageImage,ObjM.submarineCS.airCount);
         UIM.nTorpedoTextCS.doText(ObjM.submarineCS.doGetNTorpedoCount());
         UIM.hTorpedoTextCS.doText(ObjM.submarineCS.doGetHTorpedoCount());
+        UIM.playerHPBarCS.doInit();
         doOutGameDelegate = doInGame;
     }
 
     void doInGame()
     {
         ObjM.submarineCS.doInGame(ObjM,UIM);
-        ObjM.eneSubmarineManagerCS.doInGame(ObjM.eTorpedoCS, ObjM.eHomingCS);
+        ObjM.eneSubmarineManagerCS.doInGame(ObjM);
         UIM.homingAimCS.doLockOn(ObjM.submarineCS.doGetLockOnFlag());
         UIM.mapIconCS.doMapping(ObjM.submarineCS);
         UIM.sonarImageCS.doRotSonar(ObjM.submarineCS.transform.localEulerAngles);
         UIM.sonarCS.doSetPos(ObjM.submarineCS);
+        UIM.playerHPBarCS.doHP(ObjM.submarineCS.doGetCurrentHP(), ObjM.submarineCS.doGetMaxHP());
     }
 
     // Update is called once per frame

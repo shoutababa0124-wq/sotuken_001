@@ -3,7 +3,6 @@ using UnityEngine;
 public class UIManagerCS : MonoBehaviour
 {
     //ÉCÉìÉQÅ[ÉÄì‡
-    public Canvas playerViewCanvas;
     public HomingAimCS homingAimCS;
     public AirImageCS airImageCS;
     public GameObject airGageImage;
@@ -16,4 +15,5 @@ public class UIManagerCS : MonoBehaviour
     public GameObject sonarImage;
     public NTorpedoTextCS nTorpedoTextCS;
     public HTorpedoTextCS hTorpedoTextCS;
+    public PlayerHPBarCS playerHPBarCS;
 }
