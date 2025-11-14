@@ -39,6 +39,9 @@ public class EneSubmarineCS : MonoBehaviour
     public Renderer myRend;
     public Rigidbody rb;
 
+    bool nAttackInstructionsFlag = false, hAttackInstructiondFlag = false;//攻撃指示
+    bool maskerInstructionsFlag = false;//マスカーの使用指示
+
     bool onTheSeaFlag = false;//海面にいるか
     float frontBackInterval = 0.0f;//前後移動レバーの入力インターバル
     bool frontBackIntervalStart = false;//前後移動レバーの入力確認フラグ
@@ -50,7 +53,6 @@ public class EneSubmarineCS : MonoBehaviour
     float attackInterval = 0.0f;//魚雷再発射にかかるインターバル
     bool attackFlag = false;//攻撃実行確認フラグ
     float loadingTime = 0.0f;//装填時間のカウント
-    bool nAttackInstructionsFlag = false, hAttackInstructiondFlag = false;//攻撃指示
 
     bool attackRightLeft = false;//falseでleft:trueでright
     bool lockonFlag = false;//ロックオン中か
@@ -61,7 +63,6 @@ public class EneSubmarineCS : MonoBehaviour
     float maskerTime = 0.0f;//マスカーの経過時間
     float maskerInterval = 0.0f;//マスカーの使用インターバル
     Color myColor,maskerColor;//通常時、マスカー中の配色
-    bool maskerInstructionsFlag = false;//マスカーの使用指示
 
     //海面移動時の重力は-9.81、水中では0
     Vector3 onGravity = new Vector3(0.0f, -9.81f, 0.0f), underGravity = Vector3.zero;
@@ -139,7 +140,8 @@ public class EneSubmarineCS : MonoBehaviour
 
     void doMoveFrontBack()
     {
-        var frontBack = playerInput.actions["Front&Back"];
+        //var frontBack = playerInput.actions["Front&Back"];
+        float frontBack = 0.01f;
         float initFrontSpeed;//前進後退に使用する変数を決める
         //適応する速度の設定
         if(onTheSeaFlag == true)//海面にいる場合
@@ -175,20 +177,24 @@ public class EneSubmarineCS : MonoBehaviour
         }
         else
         {
-            if(frontBack.ReadValue<float>() != 0)//前進後退いずれかの入力があったら
+            //if(frontBack.ReadValue<float>() != 0)//前進後退いずれかの入力があったら
+            if(frontBack != 0)//前進後退いずれかの入力があったら
             {
-                if(frontLever < 3 && frontBack.ReadValue<float>() > 0)//前進の最高速度
+                //if(frontLever < 3 && frontBack.ReadValue<float>() > 0)//前進の最高速度
+                if(frontLever < 3 && frontBack > 0)//前進の最高速度
                 {
                     frontLever++;
                     frontSpeed = frontLever * 0.0003f;//入力回数1回ごとに加速
                 }
-                if(frontLever > -3 && frontBack.ReadValue<float>() < 0)//後退の最高速度
+                //if(frontLever > -3 && frontBack.ReadValue<float>() < 0)//後退の最高速度
+                if(frontLever > -3 && frontBack < 0)//後退の最高速度
                 {
                     frontLever--;
                     frontSpeed = frontLever * 0.0003f;//入力回数1回ごとに加速
                 }
             }
-            if(frontBack.IsPressed())//前進後退レバーが押されたら
+            //if(frontBack.IsPressed())//前進後退レバーが押されたら
+            if(frontBack!=0)//前進後退レバーが押されたら
             {
                 frontBackIntervalStart = true;//インターバル開始
             }
@@ -327,8 +333,8 @@ public class EneSubmarineCS : MonoBehaviour
     void doMove()
     {
         doMoveFrontBack();
-        doMoveRightLeft();
-        doMoveUpDown();
+        //doMoveRightLeft();
+        //doMoveUpDown();
     }
 
     void doNomalAttack(ObjectManagerCS objM)
@@ -393,13 +399,14 @@ public class EneSubmarineCS : MonoBehaviour
     //}
 
 
-    void doMasker()
+    void doMasker(ObjectManagerCS objM)
     {
         if(maskerInstructionsFlag == true && maskerFlag == true && onTheSeaFlag == false)//マスカーの入力+マスカー使用可能
         {
             airCount -= maskerCount;//エアを消費
             maskerUseFlag = true;
             maskerFlag = false;
+            ParticleSystem.Instantiate(objM.maskerParticle, transform.position, objM.maskerParticle.transform.rotation);
         }
         if(maskerUseFlag == true)
         {
@@ -444,16 +451,26 @@ public class EneSubmarineCS : MonoBehaviour
         return lockonFlag;
     }
 
+    public bool doGetMaskerUseFlag()
+    {
+        return maskerUseFlag;
+    }
+
+    public float doGetFrontBackSpeed()
+    {
+        return frontSpeed;
+    }
+
     public void doInGame(ObjectManagerCS objM)
     {
         doCheckDepth();
-        //doMove();
+        doMove();
         doNomalAttack(objM);
         doReload();
         //doRockOn(aiming);
-        doMasker();
+        doMasker(objM);
         //maskerInstructionsFlag = true;
-        nAttackInstructionsFlag = true;
+        //nAttackInstructionsFlag = true;
     }
 
     // Update is called once per frame

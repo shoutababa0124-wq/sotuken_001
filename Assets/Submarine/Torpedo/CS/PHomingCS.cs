@@ -1,19 +1,16 @@
+using Unity.VisualScripting;
 using UnityEngine;
 
 public class PHomingCS : MonoBehaviour
 {
-    public Transform target;       // ターゲットのトランスフォーム
-    public float speed = 10f;      // ミサイルの速度
-    public float maxRotationSpeed = 5f; // 最大回転速度
-    public float accelerationTime = 0.5f; // 回転速度が最大になるまでの時間
-    public float starttime = 0.5f;//回転速度が加算されるまでの時間
-    public float maxLifetime = 10f;  // 最大存続時間
-    public float hitDistance = 1f;  // ヒットとみなす距離
+    GameObject target;       // ターゲット
+    float speed = 0.015f;      // ミサイルの速度
+    float maxRotationSpeed = 3f; // 最大回転速度
+    float accelerationTime = 0.3f; // 回転速度が最大になるまでの時間
+    float starttime = 0.1f;//回転速度が加算されるまでの時間
 
-    private float startTime;
-    private float currentRotationSpeed;
-
-    public string TargetName = "LockOnTarget";
+    float startTime;
+    float currentRotationSpeed;
 
     public int damage;
     float destroyTime = 0.0f;
@@ -21,39 +18,50 @@ public class PHomingCS : MonoBehaviour
 
     void Start()
     {
-        startTime = Time.time; // 初期時間を保存
+        startTime = Time.deltaTime; // 初期時間を保存
         currentRotationSpeed = 0f; // 初期回転速度を0に設定
+    }
+
+    public void doSetTarget(GameObject setTarget)
+    {
+        target = setTarget;
     }
 
     void Update()
     {
+        destroyTime += Time.deltaTime;
+        if(destroyTime > 60.0f)
+        {
+            GameObject.Instantiate(torpedoBom, transform.position, transform.rotation);
+            Destroy(this.gameObject);
+        }
+        if(target.IsDestroyed())
+        {
+            Destroy(this.gameObject);
+        }
         if(target == null)
         {
-            return; // ターゲットが設定されていない場合は何もしない
+            transform.Translate(Vector3.forward * speed);
         }
-        if(starttime > 0) { starttime -= Time.deltaTime; }
         else
         {
-            // 回転速度を徐々に増加
-            float elapsedTime = Time.time - startTime;
-            currentRotationSpeed = Mathf.Lerp(0f, maxRotationSpeed, elapsedTime / accelerationTime);
-        }
+            if(starttime > 0) { starttime -= Time.deltaTime; }
+            else
+            {
+                // 回転速度を徐々に増加
+                float elapsedTime = Time.deltaTime - startTime;
+                currentRotationSpeed = Mathf.Lerp(0f, maxRotationSpeed, elapsedTime / accelerationTime);
+            }
 
+            // ターゲットの方向を計算
+            Vector3 direction = (target.transform.position - transform.position).normalized;
 
-        // ターゲットの方向を計算
-        Vector3 direction = (target.position - transform.position).normalized;
+            // ターゲットの方向に向かって回転
+            Quaternion lookRotation = Quaternion.LookRotation(direction);
+            transform.rotation = Quaternion.Slerp(transform.rotation, lookRotation, currentRotationSpeed * Time.deltaTime);
 
-        // ターゲットの方向に向かって回転
-        Quaternion lookRotation = Quaternion.LookRotation(direction);
-        transform.rotation = Quaternion.Slerp(transform.rotation, lookRotation, currentRotationSpeed * Time.deltaTime);
-
-        // 前進
-        transform.Translate(Vector3.forward * speed * Time.deltaTime);
-
-        // 一定時間経過後に削除
-        if(Time.time - startTime >= maxLifetime)
-        {
-            Destroy(gameObject);
+            // 前進
+            transform.Translate(Vector3.forward * speed * Time.deltaTime);
         }
     }
 
@@ -62,7 +70,7 @@ public class PHomingCS : MonoBehaviour
         switch(other.gameObject.tag)
         {
             case "Enemy":
-                Debug.Log("命中！");
+                Debug.Log("ホーミング魚雷命中！");
                 break;
             case "ETorpedo":
                 Debug.Log("敵の魚雷に命中！");

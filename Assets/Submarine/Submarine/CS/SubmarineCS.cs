@@ -1,8 +1,3 @@
-using System.Collections;
-using System.Timers;
-using Unity.Mathematics;
-using Unity.VisualScripting;
-using UnityEditor;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -56,6 +51,8 @@ public class SubmarineCS : MonoBehaviour
 
     bool attackRightLeft = false;//falseでleft:trueでright
     bool lockonFlag = false;//ロックオン中か
+    GameObject hitObject;//ロックオンしたオブジェクト
+    float lockOnTime = 0.0f;
 
     bool maskerUseFlag = false;//マスカー使用中か
     bool maskerFlag = true;//マスカー使用可能か
@@ -377,9 +374,14 @@ public class SubmarineCS : MonoBehaviour
             }
             else if(playerInput.actions["HomingAttack"].WasReleasedThisFrame() && remainingHTorpedo > 0)
             {
+                Debug.Log("ホーミング魚雷発射！");
                 attackFlag = true;
                 remainingHTorpedo--;
                 hTorpedoTextCS.doText(remainingHTorpedo);
+                if(lockonFlag == true)
+                {
+                    objM.pHomingCS.doSetTarget(hitObject);
+                }
                 interValTime = 4.0f;
                 if(attackRightLeft == false)
                 {
@@ -416,7 +418,7 @@ public class SubmarineCS : MonoBehaviour
         }
     }
 
-    void doRockOn()
+    void doRockOn(ObjectManagerCS objM)
     {
         if(remainingHTorpedo > 0)
         {
@@ -433,16 +435,22 @@ public class SubmarineCS : MonoBehaviour
             {
                 // 3. 衝突したオブジェクトの情報を取得
                 // hit.collider.gameObject で衝突したゲームオブジェクトを取得
-                GameObject hitObject = hit.collider.gameObject;
+                hitObject = hit.collider.gameObject;
 
-                if(hitObject.tag == "Enemy")
+                if(hitObject.tag == "Enemy" && objM.eneSubmarineManagerCS.doGetEneSubmarineCS()[0].doGetMaskerUseFlag() == false)
                 {
                     Debug.Log("Lock On : " + hitObject.name);
                     lockonFlag = true;
+                    lockOnTime = 0.0f;
                 }
                 else
                 {
-                    lockonFlag = false;
+                    lockOnTime += Time.deltaTime;
+                    if(lockOnTime > 1.0f)//1秒間はロックオンが維持される
+                    {
+                        lockonFlag = false;
+                        hitObject = null;
+                    }
                 }
             }
         }
@@ -507,7 +515,7 @@ public class SubmarineCS : MonoBehaviour
         }
     }
 
-    void doSonar(EneSubmarineManagerCS eneSubmarineManagerCS, SonarIconManagerCS sonarIconManagerCS)
+    void doSonar(ObjectManagerCS objM, UIManagerCS uIM)
     {
         if((!playerInput.actions["SpecialAction"].IsPressed()) &&playerInput.actions["Sonar"].WasPressedThisFrame() && sonarFlag == false)
         {
@@ -518,7 +526,7 @@ public class SubmarineCS : MonoBehaviour
             }
             for(int i = freCount; i < freCount + eneCount; i++)
             {
-                pos[i] = transform.position - eneSubmarineManagerCS.doGetEneSubmarineCS()[i].transform.position;
+                pos[i] = transform.position - objM.eneSubmarineManagerCS.doGetEneSubmarineCS()[i].transform.position;
             }
             sonarFlag = true;
         }
@@ -540,10 +548,10 @@ public class SubmarineCS : MonoBehaviour
         }
         for(int i = freCount; i < freCount + eneCount; i++)
         {
-            //if(eneSubmarineCS[i].diveSpeed != 0)//前進後退中
-            //{
-            sonarIconManagerCS.doSonar(i, sonarFlag, new Vector3(-pos[i].x, -pos[i].z, 0));
-            //}
+            if(objM.eneSubmarineManagerCS.doGetEneSubmarineCS()[i].doGetFrontBackSpeed() >= 1.0f)//前進後退速度が1ノット以上
+            {
+                uIM.sonarIconManagerCS.doSonar(i, sonarFlag, new Vector3(-pos[i].x, -pos[i].z, 0));
+            }
         }
     }
 
@@ -651,9 +659,9 @@ public class SubmarineCS : MonoBehaviour
         doMove();
         doAttack(objM, uIM);
         doReload();
-        doRockOn();
+        doRockOn(objM);
         doMasker(objM,uIM);
-        doSonar(objM.eneSubmarineManagerCS,uIM.sonarIconManagerCS);
+        doSonar(objM,uIM);
         doDamageInterval();
     }
 

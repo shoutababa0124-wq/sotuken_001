@@ -1101,7 +1101,7 @@ Transform:
   m_GameObject: {fileID: 299362749}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 100}
+  m_LocalPosition: {x: 0, y: 0, z: 50}
   m_LocalScale: {x: 200, y: 100, z: 10}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -1613,7 +1613,7 @@ Transform:
   m_GameObject: {fileID: 624750767}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -100, y: 0, z: 0}
+  m_LocalPosition: {x: -50, y: 0, z: 0}
   m_LocalScale: {x: 10, y: 100, z: 200}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -1929,7 +1929,7 @@ MonoBehaviour:
   eTorpedoCS: {fileID: -1030614051906280551, guid: 06d61862ec6e46b419bde5893306b96d, type: 3}
   eHomingCS: {fileID: 6991089145497058877, guid: bc0bb4ba4fbb73a4eb668a909ccfc9ca, type: 3}
   eneSubmarineCS: {fileID: 8592925958381418719, guid: 64e2be243d0cfac439ca6d2de8ea451b, type: 3}
-  maskerParticle: {fileID: 2955649670610209470, guid: 4dbd070fe7555ae47b229e9ad927cb67, type: 3}
+  maskerParticle: {fileID: 5083136253836614698, guid: 0c3086784b3654c498ae8fa7671e84e9, type: 3}
   submarineBomParticle: {fileID: 198656289721292014, guid: 25c7139d5d125eb44ae27f0a796d7023, type: 3}
   torpedoBomParticle: {fileID: 198175801688348628, guid: 5f91cb7565fabdb4981ba1eb68756c66, type: 3}
   torpedoBomCS: {fileID: 3425109471514100145, guid: 2a0cbe91d73a9b74ab098dc1f6f13cb5, type: 3}
@@ -3192,7 +3192,7 @@ Transform:
   m_GameObject: {fileID: 1383024703}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: -100}
+  m_LocalPosition: {x: 0, y: 0, z: -50}
   m_LocalScale: {x: 200, y: 100, z: 10}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -4895,7 +4895,7 @@ Transform:
   m_GameObject: {fileID: 2138146734}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 100, y: 0, z: 0}
+  m_LocalPosition: {x: 50, y: 0, z: 0}
   m_LocalScale: {x: 10, y: 100, z: 200}
   m_ConstrainProportionsScale: 0
   m_Children: []
