@@ -6,7 +6,7 @@ on:
    - cron: '0 3 * * 1'
 
 env:
-  UNITY_VERSION: 6000.2.12f1
+  UNITY_VERSION: 6000.2.10f1
 
 jobs:
   build_webgl:
